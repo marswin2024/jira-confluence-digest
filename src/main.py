@@ -15,7 +15,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler('/app/logs/digest.log')
+        logging.FileHandler('./logs/digest.log')
     ]
 )
 logger = logging.getLogger(__name__)
@@ -122,7 +122,10 @@ class DigestApp:
         signal.signal(signal.SIGTERM, signal_handler)
 
         logger.info("Starting scheduler (press Ctrl+C to exit)")
-        logger.info(f"Next run scheduled for: {self.scheduler.get_jobs()[0].next_run_time}")
+        # Log next run time if jobs exist
+        jobs = self.scheduler.get_jobs()
+        if jobs:
+            logger.info(f"Scheduled job: {jobs[0]}")
 
         try:
             self.scheduler.start()
