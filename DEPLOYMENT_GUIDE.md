@@ -61,6 +61,19 @@ export PROJECT_ID=jira-confluence-digest-123456
 # Docker Image bauen und zu Google Container Registry pushen
 gcloud builds submit --tag gcr.io/${PROJECT_ID}/jira-confluence-digest
 
+# Setze die Umgebungsvariablen (ersetze mit deinen echten Werten!)
+export JIRA_URL="https://your-company.atlassian.net"
+export JIRA_USERNAME="your-email@company.com"
+export JIRA_API_TOKEN="your-jira-api-token"
+export CONFLUENCE_URL="https://your-company.atlassian.net/wiki"
+export CONFLUENCE_USERNAME="your-email@company.com"
+export CONFLUENCE_API_TOKEN="your-confluence-api-token"
+export SMTP_HOST="smtp.gmail.com"
+export SMTP_PORT="587"
+export SMTP_USERNAME="your-email@gmail.com"
+export SMTP_PASSWORD="your-app-password"
+export RECIPIENT_EMAIL="recipient@company.com"
+
 # Zu Cloud Run deployen
 gcloud run deploy jira-confluence-digest \
   --image gcr.io/${PROJECT_ID}/jira-confluence-digest \
@@ -70,7 +83,7 @@ gcloud run deploy jira-confluence-digest \
   --memory 512Mi \
   --cpu 1 \
   --timeout 900 \
-  --set-env-vars "JIRA_URL=https://your-company.atlassian.net,JIRA_USERNAME=your-email@company.com,JIRA_API_TOKEN=your-api-token-here,CONFLUENCE_URL=https://your-company.atlassian.net/wiki,CONFLUENCE_USERNAME=your-email@company.com,CONFLUENCE_API_TOKEN=your-api-token-here,SMTP_HOST=smtp.gmail.com,SMTP_PORT=587,SMTP_USERNAME=your-email@company.com,SMTP_PASSWORD=your-smtp-password-here,RECIPIENT_EMAIL=your-email@company.com,TIMEZONE=Europe/Berlin"
+  --set-env-vars "JIRA_URL=${JIRA_URL},JIRA_USERNAME=${JIRA_USERNAME},JIRA_API_TOKEN=${JIRA_API_TOKEN},CONFLUENCE_URL=${CONFLUENCE_URL},CONFLUENCE_USERNAME=${CONFLUENCE_USERNAME},CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN},SMTP_HOST=${SMTP_HOST},SMTP_PORT=${SMTP_PORT},SMTP_USERNAME=${SMTP_USERNAME},SMTP_PASSWORD=${SMTP_PASSWORD},RECIPIENT_EMAIL=${RECIPIENT_EMAIL},TIMEZONE=Europe/Berlin"
 ```
 
 **Hinweis:** Das Deployment dauert 2-5 Minuten.
