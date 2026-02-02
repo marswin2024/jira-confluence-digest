@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  digest-app:
+    build: .
+    container_name: jira-confluence-digest
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1

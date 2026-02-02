@@ -1,0 +1,12 @@
+.gcloudignore
+.git
+.gitignore
+__pycache__/
+*.pyc
+.env
+logs/
+venv/
+.vscode/
+.idea/
+README.md
+docker-compose.yml

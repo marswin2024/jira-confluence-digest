@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Digest - Jira & Confluence</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #172B4D;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #F4F5F7;
+        }
+        .container {
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            padding: 30px;
+        }
+        h1 {
+            color: #0052CC;
+            font-size: 28px;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #0052CC;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #0052CC;
+            font-size: 22px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid #0052CC;
+            padding-left: 12px;
+        }
+        h3 {
+            color: #42526E;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            background-color: #F4F5F7;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+        .date {
+            color: #6B778C;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        th {
+            background-color: #0052CC;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #DFE1E6;
+        }
+        tr:hover {
+            background-color: #F4F5F7;
+        }
+        .ticket-link {
+            color: #0052CC;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .ticket-link:hover {
+            text-decoration: underline;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            background-color: #DFE1E6;
+            color: #42526E;
+        }
+        .change-item {
+            background-color: #F4F5F7;
+            padding: 8px 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+            border-left: 3px solid #0052CC;
+        }
+        .change-arrow {
+            color: #0052CC;
+            font-weight: bold;
+            margin: 0 8px;
+        }
+        .comment-box {
+            background-color: #FFFAE6;
+            padding: 10px 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+            border-left: 3px solid #FFAB00;
+            font-size: 13px;
+        }
+        .comment-author {
+            font-weight: 600;
+            color: #42526E;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #6B778C;
+            font-style: italic;
+        }
+        .section-summary {
+            background-color: #E3FCEF;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #00875A;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #DFE1E6;
+            text-align: center;
+            color: #6B778C;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Täglicher Jira & Confluence Digest</h1>
+        <p class="date">{{ date }}</p>
+
+        <!-- Confluence Section -->
+        <h2>📝 Confluence Updates</h2>
+        {% if confluence_pages %}
+            <div class="section-summary">
+                <strong>{{ confluence_pages|length }}</strong> Seite(n) wurden in den letzten 24 Stunden aktualisiert.
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Seitentitel</th>
+                        <th>Space</th>
+                        <th>Aktualisiert von</th>
+                        <th>Zeitpunkt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for page in confluence_pages %}
+                    <tr>
+                        <td><a href="{{ page.url }}" class="ticket-link">{{ page.title }}</a></td>
+                        <td>{{ page.space_name }}</td>
+                        <td>{{ page.last_updated_by }}</td>
+                        <td>{{ page.last_updated }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">Keine Confluence-Updates in den letzten 24 Stunden.</div>
+        {% endif %}
+
+        <!-- Jira Section -->
+        <h2>🎫 Jira Updates</h2>
+
+        {% set total_jira = (jira_updates.new_tickets|length) + (jira_updates.status_changes|length) + (jira_updates.assignment_changes|length) + (jira_updates.new_comments|length) %}
+
+        {% if total_jira > 0 %}
+            <div class="section-summary">
+                <strong>{{ total_jira }}</strong> Jira-Aktivität(en) in den letzten 24 Stunden:
+                {{ jira_updates.new_tickets|length }} neue Tickets,
+                {{ jira_updates.status_changes|length }} Status-Änderungen,
+                {{ jira_updates.assignment_changes|length }} Zuweisungen,
+                {{ jira_updates.new_comments|length }} Kommentare.
+            </div>
+
+            <!-- New Tickets -->
+            {% if jira_updates.new_tickets %}
+            <h3>🆕 Neue Tickets ({{ jira_updates.new_tickets|length }})</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Zusammenfassung</th>
+                        <th>Projekt</th>
+                        <th>Status</th>
+                        <th>Zugewiesen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in jira_updates.new_tickets %}
+                    <tr>
+                        <td><a href="{{ ticket.url }}" class="ticket-link">{{ ticket.key }}</a></td>
+                        <td>{{ ticket.summary }}</td>
+                        <td>{{ ticket.project }}</td>
+                        <td><span class="status-badge">{{ ticket.status }}</span></td>
+                        <td>{{ ticket.assignee }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+            <!-- Status Changes -->
+            {% if jira_updates.status_changes %}
+            <h3>🔄 Status-Änderungen ({{ jira_updates.status_changes|length }})</h3>
+            {% for ticket in jira_updates.status_changes %}
+            <div class="change-item">
+                <strong><a href="{{ ticket.url }}" class="ticket-link">{{ ticket.key }}</a></strong>: {{ ticket.summary }}
+                <br>
+                <small>Projekt: {{ ticket.project }} | Zugewiesen: {{ ticket.assignee }}</small>
+                <br>
+                {% for change in ticket.status_changes %}
+                    <span style="color: #6B778C;">{{ change.from }}</span>
+                    <span class="change-arrow">→</span>
+                    <span style="color: #00875A; font-weight: bold;">{{ change.to }}</span>
+                    <small style="color: #6B778C;">({{ change.when }})</small>
+                    {% if not loop.last %}<br>{% endif %}
+                {% endfor %}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Assignment Changes -->
+            {% if jira_updates.assignment_changes %}
+            <h3>👤 Zuweisungen ({{ jira_updates.assignment_changes|length }})</h3>
+            {% for ticket in jira_updates.assignment_changes %}
+            <div class="change-item">
+                <strong><a href="{{ ticket.url }}" class="ticket-link">{{ ticket.key }}</a></strong>: {{ ticket.summary }}
+                <br>
+                <small>Projekt: {{ ticket.project }} | Status: {{ ticket.status }}</small>
+                <br>
+                {% for change in ticket.assignment_changes %}
+                    <span style="color: #6B778C;">{{ change.from }}</span>
+                    <span class="change-arrow">→</span>
+                    <span style="color: #00875A; font-weight: bold;">{{ change.to }}</span>
+                    <small style="color: #6B778C;">({{ change.when }})</small>
+                    {% if not loop.last %}<br>{% endif %}
+                {% endfor %}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <!-- New Comments -->
+            {% if jira_updates.new_comments %}
+            <h3>💬 Neue Kommentare ({{ jira_updates.new_comments|length }})</h3>
+            {% for ticket in jira_updates.new_comments %}
+            <div class="change-item">
+                <strong><a href="{{ ticket.url }}" class="ticket-link">{{ ticket.key }}</a></strong>: {{ ticket.summary }}
+                <br>
+                <small>Projekt: {{ ticket.project }} | Status: {{ ticket.status }} | Zugewiesen: {{ ticket.assignee }}</small>
+                {% for comment in ticket.comments %}
+                <div class="comment-box">
+                    <span class="comment-author">{{ comment.author }}</span>
+                    <small style="color: #6B778C;">({{ comment.created }})</small>
+                    <br>
+                    {{ comment.body }}...
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+        {% else %}
+            <div class="empty-state">Keine Jira-Updates in den letzten 24 Stunden.</div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Automatisch generiert von Jira & Confluence Daily Digest</p>
+            <p>{{ date }}</p>
+        </div>
+    </div>
+</body>
+</html>
